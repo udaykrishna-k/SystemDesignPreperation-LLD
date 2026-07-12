@@ -1,0 +1,15 @@
+Parking Lot Design
+Requirement Gathering
+1. Parking lot should support parking of vehicles.
+2. Parking lot should support parking of different vehicle types.
+3. Parking lot should have multiple floors.
+4. Each floor should have multiple parking spots.
+5. A parking spot should accept only a particular vehicle type.
+6. Parking lot should have multiple entry and exit gates.
+7. Parking lot should support multiple pricing strategies (Time-based, Event-based, etc.).
+8. Customers should be able to pay tickets using multiple payment modes (Card, Cash, UPI, etc.).
+9. No two vehicles should get the same parking spot at the same time.
+Classes
+ParkingLot, Floor, ParkingSpot, Vehicle, Gate, Ticket, PricingStrategy, PaymentMode
+Enums
+VehicleType, GateType, PricingStrategyType, PaymentModeType
