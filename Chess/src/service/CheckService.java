@@ -3,10 +3,10 @@ package service;
 import enums.PieceType;
 import models.Board;
 import models.Cell;
+import models.Move;
 import models.Player;
-import strategy.MoveStrategy;
 
-import java.util.List;
+import java.util.Optional;
 
 public class CheckService {
 
@@ -34,5 +34,53 @@ public class CheckService {
             }
         }
         return false;
+    }
+
+    public Boolean isCheckMate(Player player, Board board) {
+
+        if (!isKingUnderCheck(player, board)) {
+            return false;
+        }
+
+        for (int srcRow = 0; srcRow < 8; srcRow++) {
+            for (int srcCol = 0; srcCol < 8; srcCol++) {
+
+                Cell src = board.getCell(srcRow, srcCol);
+
+                if (src.getPiece() == null) {
+                    continue;
+                }
+
+                if (src.getPiece().getPieceColour() != player.getPieceColour()) {
+                    continue;
+                }
+
+                for (int destRow = 0; destRow < 8; destRow++) {
+                    for (int destCol = 0; destCol < 8; destCol++) {
+
+                        Cell dest = board.getCell(destRow, destCol);
+
+                        Optional<Move> move = src.getPiece().move(src, dest, board);
+
+                        if (move.isEmpty()) {
+                            continue;
+                        }
+
+                        move.get().executeMove();
+
+                        boolean stillInCheck =
+                                isKingUnderCheck(player, board);
+
+                        move.get().undoMove();
+
+                        if (!stillInCheck) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 }
