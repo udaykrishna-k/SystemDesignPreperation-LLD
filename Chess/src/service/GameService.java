@@ -3,12 +3,12 @@ package service;
 import enums.PieceColour;
 import enums.PlayerType;
 import models.*;
+import observer.Publisher;
 
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.Stack;
 
-public class GameService {
+public class GameService extends Publisher {
     private Player player1;
     private Player player2;
     private Player currentPlayer;
@@ -17,6 +17,7 @@ public class GameService {
     private CheckService checkService;
 
     public GameService(Player player1, Player player2){
+        super();
         this.player1 = player1;
         this.player2 = player2;
         this.currentPlayer = player1.getPieceColour() == PieceColour.WHITE ? player1 : player2;
@@ -54,6 +55,8 @@ public class GameService {
             Cell src = board.getCell(move[0]);
             Cell dest = board.getCell(move[1]);
 
+            String moveMessage = "Player " + this.currentPlayer.getName() + " moved a piece from " + move[0] + " to " + move[1];
+
             Piece piece = src.getPiece();
 
             if (piece == null) {
@@ -75,6 +78,9 @@ public class GameService {
 
             this.moveService.makeMove(moveResult.get());
 
+            this.publish(moveMessage);
+
+            System.out.println();
             board.printBoard();
 
             Player opponentPlayer = this.currentPlayer == this.player1 ? this.player2 : this.player1;
@@ -82,7 +88,9 @@ public class GameService {
             this.checkKingStatus(opponentPlayer);
 
             if (this.checkService.isCheckMate(opponentPlayer, this.board)){
-                System.out.println("Player " + this.player1.getName() + " has won the game");
+                String message = "Player " + this.currentPlayer.getName() + " has won the game";
+                this.publish(message);
+                System.out.println(message);
                 break;
             }
 
@@ -110,7 +118,9 @@ public class GameService {
             String input = scanner.nextLine().trim();
             if (input.equalsIgnoreCase("U")) {
                 if (moveService.canUndo()) {
+                    String message = "Player " + this.currentPlayer.getName() + " has undone the move";
                     moveService.undoMove();
+                    this.publish(message);
                     switchPlayer();
                     break;
                 }
