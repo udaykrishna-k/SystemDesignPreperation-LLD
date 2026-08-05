@@ -6,7 +6,12 @@ import models.Vehicle;
 import repositories.BookingRepository;
 import repositories.BranchRepository;
 import service.CarRentalService;
-import strategies.*;
+import strategies.booking.BookingStrategy;
+import strategies.booking.LeastBookedVehicleStrategy;
+import strategies.payment.CashPaymentStrategy;
+import strategies.payment.PaymentStrategy;
+import strategies.pricing.PricingStrategy;
+import strategies.pricing.TimeBasedPricingStrategy;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -37,7 +42,7 @@ public class Main {
 
         PaymentStrategy paymentStrategy = new CashPaymentStrategy();
         PricingStrategy pricingStrategy = new TimeBasedPricingStrategy();
-        BookingStrategy bookingStrategy = new LeastBookedVehicleStrategy();
+        BookingStrategy bookingStrategy = new LeastBookedVehicleStrategy(bookingRepository);
 
         CarRentalService carRentalService = CarRentalService.getInstance(branchRepository, bookingRepository,
                 pricingStrategy, bookingStrategy);
@@ -48,12 +53,43 @@ public class Main {
         Optional<Booking> booking1 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.SEDAN,
                 startTime, endTime, 100, paymentStrategy);
 
-        System.out.println(booking1);
+        if (booking1.isPresent()){
+            System.out.println("Booking1 is successful");
+            System.out.println();
+        }
 
-        Optional<Booking> booking2 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.HATCHBACK,
+        Optional<Booking> booking2 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.SEDAN,
                 startTime, endTime, 100, paymentStrategy);
 
-        System.out.println(booking2);
+        if (booking2.isPresent()){
+            System.out.println("Booking2 is successful");
+            System.out.println();
+        }
 
+        Optional<Booking> booking3 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.SEDAN,
+                startTime, endTime, 100, paymentStrategy);
+
+        if (booking3.isPresent()){
+            System.out.println("Booking3 is successful");
+            System.out.println();
+        }
+
+        Optional<Booking> booking4 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.HATCHBACK,
+                startTime, endTime, 100, paymentStrategy);
+
+        if (booking4.isPresent()){
+            System.out.println("Booking4 is successful");
+            System.out.println();
+        }
+
+        Thread t1 = new Thread(() -> carRentalService.bookVehicle("Branch2", "Branch1", VehicleType.HATCHBACK,
+                startTime, endTime, 100, paymentStrategy));
+
+
+        Thread t2 = new Thread(() -> carRentalService.bookVehicle("Branch2", "Branch1", VehicleType.HATCHBACK,
+                startTime, endTime, 100, paymentStrategy));
+
+        t1.start();
+        t2.start();
     }
 }

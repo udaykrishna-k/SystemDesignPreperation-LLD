@@ -1,4 +1,4 @@
-package strategies;
+package strategies.payment;
 
 import models.Booking;
 

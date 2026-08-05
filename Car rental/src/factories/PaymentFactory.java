@@ -1,10 +1,10 @@
 package factories;
 
 import enums.PaymentType;
-import strategies.CardPaymentStrategy;
-import strategies.CashPaymentStrategy;
-import strategies.PaymentStrategy;
-import strategies.UpiPaymentStrategy;
+import strategies.payment.CardPaymentStrategy;
+import strategies.payment.CashPaymentStrategy;
+import strategies.payment.PaymentStrategy;
+import strategies.payment.UpiPaymentStrategy;
 
 public class PaymentFactory {
     public static PaymentStrategy createPaymentStrategy(PaymentType paymentType){

@@ -1,4 +1,4 @@
-package strategies;
+package strategies.pricing;
 
 import models.Vehicle;
 

@@ -9,9 +9,9 @@ import models.Branch;
 import models.Vehicle;
 import repositories.BookingRepository;
 import repositories.BranchRepository;
-import strategies.BookingStrategy;
-import strategies.PaymentStrategy;
-import strategies.PricingStrategy;
+import strategies.booking.BookingStrategy;
+import strategies.payment.PaymentStrategy;
+import strategies.pricing.PricingStrategy;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,8 +41,8 @@ public class CarRentalService {
         if (instance == null){
             synchronized (CarRentalService.class) {
                 if (instance == null){
-                instance = new CarRentalService(branchRepository, bookingRepository,
-                        pricingStrategy, bookingStrategy);
+                    instance = new CarRentalService(branchRepository, bookingRepository,
+                            pricingStrategy, bookingStrategy);
                 }
             }
         }
@@ -68,9 +68,9 @@ public class CarRentalService {
             System.out.println("No available vehicles of type " + vehicleType);
             return Optional.empty();
         }
-        Optional<Vehicle> vehicleBooked = this.bookingStrategy.bookVehicle(availableVehicles);
+        Optional<Vehicle> vehicleBooked = this.bookingStrategy.bookVehicle(availableVehicles, pickUpbranch, startTime, endTime);
         if (vehicleBooked.isEmpty()){
-            System.out.println("Not able to book the vehicle, please try again");
+            System.out.println("No available vehicles of type " + vehicleType);
             return Optional.empty();
         }
         Vehicle vehicle = vehicleBooked.get();
@@ -78,19 +78,20 @@ public class CarRentalService {
         double amount = this.pricingStrategy.calculateAmount(vehicle, startTime, endTime, distanceKm);
 
         Booking booking = Booking.getBuilder().setId(UUID.randomUUID().toString())
-                                              .setStartTime(startTime)
-                                              .setEndTime(endTime).setPaymentStrategy(paymentStrategy)
-                                              .setPickUpBranch(pickUpbranch)
-                                              .setDropOffBranch(dropOffBranch)
-                                              .setVehicle(vehicle)
-                                              .setAmount(amount).build();
+                .setStartTime(startTime)
+                .setEndTime(endTime).setPaymentStrategy(paymentStrategy)
+                .setPickUpBranch(pickUpbranch)
+                .setDropOffBranch(dropOffBranch)
+                .setVehicle(vehicle)
+                .setAmount(amount).build();
 
         paymentStrategy.pay(booking);
         booking.setPaymentStatus(PaymentStatus.SUCCESS);
         booking.setBookingStatus(BookingStatus.CONFIRMED);
+        vehicle.getTempLock().compareAndSet(false, true);
         this.bookingRepository.addBooking(booking);
-        System.out.println(booking);
         vehicle.increamentBookings();
+        System.out.println(booking);
         return Optional.of(booking);
     }
 

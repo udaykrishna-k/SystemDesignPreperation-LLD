@@ -4,9 +4,8 @@ import enums.BookingStatus;
 import enums.PaymentStatus;
 import lombok.Getter;
 import lombok.Setter;
-import strategies.PaymentStrategy;
+import strategies.payment.PaymentStrategy;
 
-import java.awt.print.Book;
 import java.time.LocalDateTime;
 
 @Getter
