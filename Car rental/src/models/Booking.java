@@ -33,7 +33,7 @@ public class Booking {
         this.dropOffBranch = builder.dropOffBranch;
         this.amount = builder.amount;
         this.paymentStrategy = builder.paymentStrategy;
-        this.bookingStatus = BookingStatus.CREATED;
+        this.bookingStatus = BookingStatus.RESERVED;
         this.paymentStatus = PaymentStatus.PENDING;
     }
 

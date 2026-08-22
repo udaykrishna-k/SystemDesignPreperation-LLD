@@ -2,6 +2,7 @@ import enums.VehicleType;
 import factories.VehicleFactory;
 import models.Booking;
 import models.Branch;
+import models.User;
 import models.Vehicle;
 import repositories.BookingRepository;
 import repositories.BranchRepository;
@@ -23,6 +24,11 @@ public class Main {
 
         BranchRepository branchRepository = new BranchRepository();
         BookingRepository bookingRepository = new BookingRepository();
+
+        User user1 = new User("uday");
+        User user2 = new User("hari");
+        User user3 = new User("john");
+        User user4 = new User("doe");
 
         Branch branch1 = new Branch("Branch1", "Kurnool");
         Branch branch2 = new Branch("Branch2", "Hyderabad");
@@ -51,7 +57,7 @@ public class Main {
         LocalDateTime endTime = LocalDateTime.of(2026, 7, 2, 0,0,0);
 
         Optional<Booking> booking1 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.SEDAN,
-                startTime, endTime, 100, paymentStrategy);
+                startTime, endTime, 100, paymentStrategy, user1.getId());
 
         if (booking1.isPresent()){
             System.out.println("Booking1 is successful");
@@ -62,7 +68,7 @@ public class Main {
         }
 
         Optional<Booking> booking2 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.SEDAN,
-                startTime, endTime, 100, paymentStrategy);
+                startTime, endTime, 100, paymentStrategy, user2.getId());
 
         if (booking2.isPresent()){
             System.out.println("Booking2 is successful");
@@ -73,7 +79,7 @@ public class Main {
         }
 
         Optional<Booking> booking3 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.SEDAN,
-                startTime, endTime, 100, paymentStrategy);
+                startTime, endTime, 100, paymentStrategy, user3.getId());
 
         if (booking3.isPresent()){
             System.out.println("Booking3 is successful");
@@ -84,7 +90,7 @@ public class Main {
         }
 
         Optional<Booking> booking4 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.HATCHBACK,
-                startTime, endTime, 100, paymentStrategy);
+                startTime, endTime, 100, paymentStrategy, user4.getId());
 
         if (booking4.isPresent()){
             System.out.println("Booking4 is successful");
@@ -95,11 +101,11 @@ public class Main {
         }
 
         Thread t1 = new Thread(() -> carRentalService.bookVehicle("Branch2", "Branch1", VehicleType.HATCHBACK,
-                startTime, endTime, 100, paymentStrategy));
+                startTime, endTime, 100, paymentStrategy, user1.getId()));
 
 
         Thread t2 = new Thread(() -> carRentalService.bookVehicle("Branch2", "Branch1", VehicleType.HATCHBACK,
-                startTime, endTime, 100, paymentStrategy));
+                startTime, endTime, 100, paymentStrategy, user2.getId()));
 
         t1.start();
         t2.start();
