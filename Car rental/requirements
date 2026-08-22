@@ -1,0 +1,30 @@
+Car Rental System
+Requirement Gathering
+
+1. The system should support multiple branches and different types of vehicles.
+2. Customers should be able to search for available vehicles based on vehicle type, pickup branch, start time, and end time.
+3. A vehicle should not be available for booking if it has an existing booking for an overlapping time period.
+4. Customers should be able to pick up a vehicle from one branch and return it to another branch.
+5. The system should calculate the rental amount based on the selected vehicle, rental duration, and distance travelled.
+6. The system should support multiple payment strategies and maintain the payment status of a booking.
+7. The system should prevent concurrent users from booking the same vehicle by temporarily locking the vehicle during the booking process. The lock should expire if the booking is not completed within a specified time.
+8. The system should maintain booking states such as Reserved, Confirmed, Cancelled, and Completed, and release the vehicle lock when the booking is completed, cancelled, or expires.
+
+Classes
+
+CarRentalService
+Branch
+Vehicle
+Booking
+BookingRepository
+VehicleLock
+VehicleLockManager
+PricingStrategy
+PaymentStrategy
+BookingStrategy
+
+Enums
+
+VehicleType
+BookingStatus
+PaymentStatus
