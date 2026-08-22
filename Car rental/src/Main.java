@@ -42,7 +42,7 @@ public class Main {
 
         PaymentStrategy paymentStrategy = new CashPaymentStrategy();
         PricingStrategy pricingStrategy = new TimeBasedPricingStrategy();
-        BookingStrategy bookingStrategy = new LeastBookedVehicleStrategy(bookingRepository);
+        BookingStrategy bookingStrategy = new LeastBookedVehicleStrategy();
 
         CarRentalService carRentalService = CarRentalService.getInstance(branchRepository, bookingRepository,
                 pricingStrategy, bookingStrategy);
@@ -57,6 +57,9 @@ public class Main {
             System.out.println("Booking1 is successful");
             System.out.println();
         }
+        else{
+            System.out.println("No Vehicle found for booking1");
+        }
 
         Optional<Booking> booking2 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.SEDAN,
                 startTime, endTime, 100, paymentStrategy);
@@ -64,6 +67,9 @@ public class Main {
         if (booking2.isPresent()){
             System.out.println("Booking2 is successful");
             System.out.println();
+        }
+        else{
+            System.out.println("No Vehicle found for booking2");
         }
 
         Optional<Booking> booking3 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.SEDAN,
@@ -73,6 +79,9 @@ public class Main {
             System.out.println("Booking3 is successful");
             System.out.println();
         }
+        else{
+            System.out.println("No Vehicle found for booking3");
+        }
 
         Optional<Booking> booking4 = carRentalService.bookVehicle("Branch1", "Branch1", VehicleType.HATCHBACK,
                 startTime, endTime, 100, paymentStrategy);
@@ -80,6 +89,9 @@ public class Main {
         if (booking4.isPresent()){
             System.out.println("Booking4 is successful");
             System.out.println();
+        }
+        else{
+            System.out.println("No Vehicle found for booking4");
         }
 
         Thread t1 = new Thread(() -> carRentalService.bookVehicle("Branch2", "Branch1", VehicleType.HATCHBACK,

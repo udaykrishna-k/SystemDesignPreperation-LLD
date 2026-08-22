@@ -10,14 +10,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-public class LeastBookedVehicleStrategy extends BaseBookingStrategy implements BookingStrategy {
-
-    public LeastBookedVehicleStrategy(BookingRepository bookingRepository) {
-        super(bookingRepository);
-    }
+public class LeastBookedVehicleStrategy implements BookingStrategy {
 
     @Override
-    public Optional<Vehicle> bookVehicle(List<Vehicle> vehicles, Branch pickUpbranch, LocalDateTime startTime, LocalDateTime endTime) {
+    public Vehicle bookVehicle(List<Vehicle> vehicles, Branch pickUpbranch, LocalDateTime startTime, LocalDateTime endTime) {
         Comparator<Vehicle> comp = new Comparator<Vehicle>() {
             @Override
             public int compare(Vehicle o1, Vehicle o2) {
@@ -32,12 +28,8 @@ public class LeastBookedVehicleStrategy extends BaseBookingStrategy implements B
                 }
             }
         };
+
         vehicles.sort(comp);
-        for (Vehicle vehicle: vehicles){
-            if (this.canBookVehicle(vehicle, pickUpbranch, startTime, endTime) && vehicle.getTempLock().compareAndSet(true, false)){
-                return Optional.of(vehicle);
-            }
-        }
-        return Optional.empty();
+        return vehicles.getFirst();
     }
 }

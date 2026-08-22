@@ -14,9 +14,7 @@ import strategies.payment.PaymentStrategy;
 import strategies.pricing.PricingStrategy;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 
 public class CarRentalService {
@@ -49,12 +47,76 @@ public class CarRentalService {
         return instance;
     }
 
-    public void addBranch(Branch branch){
-        this.branchRepository.addBranch(branch);
+    private boolean isOverlapping(
+            LocalDateTime requestedStart,
+            LocalDateTime requestedEnd,
+            Booking existingBooking) {
+
+        return requestedStart.isBefore(existingBooking.getEndTime())
+                && requestedEnd.isAfter(existingBooking.getStartTime());
     }
 
-    public void addBooking(Booking booking){
-        this.bookingRepository.addBooking(booking);
+    private Branch getVehicleLocation(
+            Vehicle vehicle,
+            Branch requestedBranch,
+            LocalDateTime requestedStart,
+            List<Booking> bookings) {
+
+        Booking latestBooking = null;
+
+        for (Booking booking : bookings) {
+
+            // Booking hasn't finished before requested start
+            if (booking.getEndTime().isAfter(requestedStart)) {
+                continue;
+            }
+
+            if (latestBooking == null ||
+                    booking.getEndTime().isAfter(latestBooking.getEndTime())) {
+                latestBooking = booking;
+            }
+        }
+
+        // Vehicle has never been booked before this time.
+        // So it should be at its original branch.
+        if (latestBooking == null) {
+            return requestedBranch;
+        }
+
+        return latestBooking.getDropOffBranch();
+    }
+
+    public List<Vehicle> findAvailableVehicle(
+            VehicleType vehicleType,
+            Branch pickupBranch,
+            LocalDateTime startTime,
+            LocalDateTime endTime) {
+
+        List<Vehicle> vehicles = pickupBranch.getVehiclesByType(vehicleType);
+        List<Vehicle> availableVehicles = new ArrayList<>();
+
+        for (Vehicle vehicle : vehicles) {
+            List<Booking> bookings = bookingRepository.getBookingsForVehicle(vehicle);
+            boolean hasOverlap = false;
+            for (Booking booking : bookings) {
+                if (booking.getBookingStatus() == BookingStatus.CANCELLED) {
+                    continue;
+                }
+                if (isOverlapping(startTime, endTime, booking)) {
+                    hasOverlap = true;
+                    break;
+                }
+            }
+            if (hasOverlap) {
+                continue;
+            }
+            Branch vehicleLocation = this.getVehicleLocation(vehicle, pickupBranch, startTime, bookings);
+            if (vehicleLocation.equals(pickupBranch)) {
+                availableVehicles.add(vehicle);
+            }
+        }
+
+        return availableVehicles;
     }
 
     public Optional<Booking> bookVehicle(String pickUpBranchId, String dropOffBranchId, VehicleType vehicleType,
@@ -63,17 +125,17 @@ public class CarRentalService {
         Branch pickUpbranch = this.branchRepository.getBranchById(pickUpBranchId);
         Branch dropOffBranch = this.branchRepository.getBranchById(dropOffBranchId);
 
-        List<Vehicle> availableVehicles = pickUpbranch.getVehiclesByType(vehicleType);
+        List<Vehicle> branchVehicles = pickUpbranch.getVehiclesByType(vehicleType);
+        if (branchVehicles.isEmpty()){
+            System.out.println("No available vehicles of type " + vehicleType);
+            return Optional.empty();
+        }
+        List<Vehicle> availableVehicles = this.findAvailableVehicle(vehicleType, pickUpbranch, startTime, endTime);
         if (availableVehicles.isEmpty()){
             System.out.println("No available vehicles of type " + vehicleType);
             return Optional.empty();
         }
-        Optional<Vehicle> vehicleBooked = this.bookingStrategy.bookVehicle(availableVehicles, pickUpbranch, startTime, endTime);
-        if (vehicleBooked.isEmpty()){
-            System.out.println("No available vehicles of type " + vehicleType);
-            return Optional.empty();
-        }
-        Vehicle vehicle = vehicleBooked.get();
+        Vehicle vehicle = this.bookingStrategy.bookVehicle(availableVehicles, pickUpbranch, startTime, endTime);
 
         double amount = this.pricingStrategy.calculateAmount(vehicle, startTime, endTime, distanceKm);
 
@@ -88,7 +150,6 @@ public class CarRentalService {
         paymentStrategy.pay(booking);
         booking.setPaymentStatus(PaymentStatus.SUCCESS);
         booking.setBookingStatus(BookingStatus.CONFIRMED);
-        vehicle.getTempLock().compareAndSet(false, true);
         this.bookingRepository.addBooking(booking);
         vehicle.increamentBookings();
         System.out.println(booking);
